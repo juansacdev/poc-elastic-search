@@ -1,0 +1,10 @@
+dist
+node_modules
+coverage
+.vscode
+.git
+build
+package*.json
+.eslintrc.json
+tsconfig.json
+.prettierrc

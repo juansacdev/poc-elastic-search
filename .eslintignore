@@ -1,0 +1,11 @@
+node_modules/*
+dist/*
+build/*
+coverage/*
+.vscode
+.git
+build
+package*.json
+.eslintrc.json
+tsconfig.json
+.prettierrc
