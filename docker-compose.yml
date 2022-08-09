@@ -29,7 +29,7 @@ services:
       target: builder
     command: ["npm", "run", "dev"]
     depends_on:
-      - db
+      - elasticsearch
     env_file:
       - .env
     ports:
@@ -39,4 +39,4 @@ services:
       - /usr/app/node_modules
 
 volumes:
-  db_data: {}
+  elasticsearch_data:

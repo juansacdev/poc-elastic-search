@@ -46,5 +46,8 @@
       "npm run format:fix",
       "npm run lint:fix"
     ]
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "8.2.1"
   }
 }
