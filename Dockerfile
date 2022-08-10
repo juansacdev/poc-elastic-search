@@ -1,5 +1,5 @@
 # Stage 1: building the code
-FROM node:16-alpine3.11 as builder
+FROM node:18-alpine3.15 as builder
 
 WORKDIR /usr/app
 
@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Final
-FROM node:16-alpine3.11
+FROM node:18-alpine3.15
 
 WORKDIR /usr/app
 
