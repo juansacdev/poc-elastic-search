@@ -18,7 +18,7 @@ type UpdateDoc<T> = InsertDoc<T>
 export class ElasticSearch {
   constructor(
     private client: Client = new Client({
-      node: process.env.ELASTIC_SEARCH_NODE
+      node: process.env.ELASTICSEARCH_HOST
     })
   ) {
     this.client = client
