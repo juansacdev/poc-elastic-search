@@ -16,25 +16,52 @@ export interface InsertDoc<T> extends BaseDoc {
 type UpdateDoc<T> = InsertDoc<T>
 
 export class ElasticSearch {
-  constructor(
-    private client: Client = new Client({
-      node: process.env.ELASTICSEARCH_HOST
-    })
-  ) {
+  private client?: Client
+
+  constructor(client?: Client) {
     this.client = client
   }
 
+  private getClient() {
+    if (!this.client) {
+      let instance: Client
+
+      if (process.env.NODE_ENV === 'development') {
+        instance = new Client({
+          node: process.env.ELASTICSEARCH_HOST || 'http://localhost:9200'
+        })
+      } else {
+        instance = new Client({
+          node: process.env.ELASTICSEARCH_HOST,
+          auth: {
+            username: process.env.ELASTICSEARCH_USERNAME ?? '',
+            password: process.env.ELASTICSEARCH_PASSWORD ?? ''
+          }
+        })
+      }
+
+      this.client = instance
+
+      return this.client
+    }
+
+    return this.client
+  }
+
   get clusterInfo() {
-    const info = this.client.info()
+    const client = this.getClient()
+    const info = client.info()
     return info
   }
 
   get isRunning() {
-    return this.client.ping()
+    const client = this.getClient()
+    return client.ping()
   }
 
   async isExistedDoc(data: BaseDoc): Promise<boolean> {
-    return this.client.exists({
+    const client = this.getClient()
+    return client.exists({
       id: data.id,
       index: data.index
     })
@@ -42,7 +69,8 @@ export class ElasticSearch {
 
   // Create
   async insertOne<T>(data: InsertDoc<T>) {
-    const doc = await this.client.create<T>({
+    const client = this.getClient()
+    const doc = await client.create<T>({
       id: data.id,
       index: data.index,
       document: data.doc
@@ -51,8 +79,9 @@ export class ElasticSearch {
   }
 
   // Read
-  async getOneDocByWithMetadata<T>(data: BaseDoc) {
-    const doc = await this.client.get<T>({
+  async getOneDocByIdWithMetadata<T>(data: BaseDoc) {
+    const client = this.getClient()
+    const doc = await client.get<T>({
       id: data.id,
       index: data.index
     })
@@ -62,7 +91,8 @@ export class ElasticSearch {
 
   // Read
   async getOneDocByIdWithoutMetadata<T>(data: BaseDoc) {
-    const doc = await this.client.getSource<T>({
+    const client = this.getClient()
+    const doc = await client.getSource<T>({
       id: data.id,
       index: data.index
     })
@@ -72,13 +102,15 @@ export class ElasticSearch {
 
   // Get by query AKA `search`
   async search<T>(options: SearchOptions) {
-    const result = await this.client.search<T>(options)
+    const client = this.getClient()
+    const result = await client.search<T>(options)
     return result
   }
 
   // Update
   async updateOneDocById<T>(data: UpdateDoc<T>) {
-    const result = await this.client.update<T>({
+    const client = this.getClient()
+    const result = await client.update<T>({
       id: data.id,
       index: data.index,
       doc: data.doc
@@ -89,7 +121,8 @@ export class ElasticSearch {
 
   // Update by query
   async updateManyDocsByQuery(index: string, query: Query) {
-    const result = await this.client.updateByQuery({
+    const client = this.getClient()
+    const result = await client.updateByQuery({
       index,
       query
     })
@@ -99,7 +132,8 @@ export class ElasticSearch {
 
   // Delete
   async deleteOneDocById(data: BaseDoc) {
-    const result = await this.client.delete({
+    const client = this.getClient()
+    const result = await client.delete({
       id: data.id,
       index: data.index
     })
@@ -109,7 +143,8 @@ export class ElasticSearch {
 
   // Delete by query
   async deleteManyDocsByQuery(index: string, query: Query) {
-    const result = await this.client.deleteByQuery({
+    const client = this.getClient()
+    const result = await client.deleteByQuery({
       index,
       query
     })
@@ -124,33 +159,9 @@ export class ElasticSearch {
 // }
 
 async function run() {
-  // const client = new ElasticSearch()
-  // const info = await client.clusterInfo
-  // console.log('ElasticSearch Get clusterInfo\n', info)
-  // const doc = await client.insertOne<User>({
-  //   id: '2',
-  //   index: 'users',
-  //   doc: {
-  //     age: 21,
-  //     name: 'juanse'
-  //   }
-  // })
-  // console.log('ElasticSearch Create Doc\n', doc)
-  // const doc = await client.isExistDoc({
-  //   id: '1',
-  //   index: 'users'
-  // })
-  // console.log('ElasticSearch isExistDoc Doc\n', doc)
-  // const docWithMetaData = await client.getOneDocWithMetadata<User>({
-  //   id: '1',
-  //   index: 'users'
-  // })
-  // console.log('ElasticSearch docWithMetaData Doc\n', docWithMetaData)
-  // const docWithoutMetaData = await client.getOneDocWithoutMetadata<User>({
-  //   id: '1',
-  //   index: 'users'
-  // })
-  // console.log('ElasticSearch docWithoutMetaData Doc\n', docWithoutMetaData)
+  const client = new ElasticSearch()
+  const info = await client.clusterInfo
+  console.log('ElasticSearch Get clusterInfo\n', info)
 }
 
 run()
